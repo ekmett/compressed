@@ -220,10 +220,9 @@ type instance Key RLE = Int
 instance Lookup RLE where
   lookup i (RLE xs) 
     | i < 0 = Nothing
-    | otherwise = case viewl r of
+    | otherwise = case viewl $ snd $ split (\n -> getCount n > i) xs of
       Run _ a :< _ -> Just a
       EmptyL       -> Nothing 
-      where (l,r) = split (\n -> getCount n > i) xs
 
 instance Adjustable RLE where
   adjust f i (RLE xs) = RLE $ case viewl r of
@@ -232,8 +231,8 @@ instance Adjustable RLE where
       let 
         k = i - getCount (measure l)
         infixr 4 <?
-        Run 0 _ <? xs = xs
-        Run n a <? xs = Run n a <| xs
+        Run 0 _ <? ys = ys
+        Run m b <? ys = Run m b <| ys
      in l >< (Run k a <? Run 1 (f a) <? Run (n - k - 1) a <? r')
     where 
       (l,r) = split (\n -> getCount n > i) xs

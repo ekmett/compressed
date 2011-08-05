@@ -162,6 +162,28 @@ recodeOrd = encodeOrd . decode
 recodeEq :: Eq a => LZ78 a -> LZ78 a 
 recodeEq = encodeEq . decode 
 
+data Entry i a = Entry !i a
+
+instance Functor (Entry i) where
+  fmap f (Entry i a) = Entry i (f a)
+
+instance Extend (Entry i) where
+  extend f e@(Entry i _) = Entry i (f e)
+  duplicate e@(Entry i _) = Entry i e
+
+instance Comonad (Entry i) where
+  extract (Entry _ a) = a
+
+instance Eq i => Eq (Entry i a) where
+  Entry i _ == Entry j _ = i == j
+
+instance Ord i => Ord (Entry i a) where
+  compare (Entry i _) (Entry j _) = compare i j
+
+instance Hashable i => Hashable (Entry i a) where
+  hash (Entry i _) = hash i
+  hashWithSalt n (Entry i _) = hashWithSalt n i
+
 -- | exposes internal structure
 entries :: LZ78 a -> LZ78 (Entry Int a)
 entries = go 0 where
@@ -187,6 +209,9 @@ instance Monad LZ78 where
     , Entry j b <- decode (entries (k a))
     ]
 
+instance Adjustable LZ78 where
+  adjust f i = fmap extract . encode . adjust (Entry (-1) . f . extract) i . decode . entries
+
 type instance Key LZ78 = Int
 
 instance Lookup LZ78 where
@@ -205,26 +230,4 @@ instance Zip LZ78 where
     | Entry j b <- decode (entries bs)
     ] 
 
-
-data Entry i a = Entry !i a
-
-instance Functor (Entry i) where
-  fmap f (Entry i a) = Entry i (f a)
-
-instance Extend (Entry i) where
-  extend f e@(Entry i _) = Entry i (f e)
-  duplicate e@(Entry i _) = Entry i e
-
-instance Comonad (Entry i) where
-  extract (Entry _ a) = a
-
-instance Eq i => Eq (Entry i a) where
-  Entry i _ == Entry j _ = i == j
-
-instance Ord i => Ord (Entry i a) where
-  compare (Entry i _) (Entry j _) = compare i j
-
-instance Hashable i => Hashable (Entry i a) where
-  hash (Entry i _) = hash i
-  hashWithSalt n (Entry i _) = hashWithSalt n i
 
