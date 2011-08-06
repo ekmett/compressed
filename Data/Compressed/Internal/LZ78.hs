@@ -162,7 +162,7 @@ recodeOrd = encodeOrd . decode
 recodeEq :: Eq a => LZ78 a -> LZ78 a 
 recodeEq = encodeEq . decode 
 
-data Entry i a = Entry !i a
+data Entry i a = Entry !i a deriving (Show,Read)
 
 instance Functor (Entry i) where
   fmap f (Entry i a) = Entry i (f a)
