@@ -147,11 +147,10 @@ instance Apply RLE where
 
 instance Applicative RLE where
   pure = RLE . F.singleton . pure
-  RLE fs <*> RLE as = RLE $ F.fromList 
-    [ Run (n * m) (f a)
-    | Run n f <- toList fs
-    , Run m a <- toList as
-    ]
+  RLE fs <*> RLE as = RLE $ F.fromList $ do
+    Run n f <- toList fs
+    Run m a <- toList as
+    return $ Run (n * m) (f a)
   RLE as <* RLE bs = RLE $ F.fmap' (\(Run n a) -> Run (n * m) a) as where
     m = reduceWith getCount bs
   RLE as *> RLE bs = RLE $ mconcat $ replicate (reduceWith getCount as) bs

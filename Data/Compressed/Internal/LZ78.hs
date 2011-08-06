@@ -192,22 +192,20 @@ entries = go 0 where
 
 instance Applicative LZ78 where
   pure a = Cons (Token 0 a) Nil
-  fs <*> as = extract <$> encode 
-    [ Entry (i,j) (f a) 
-    | Entry i f <- decode (entries fs)
-    , Entry j a <- decode (entries as) 
-    ]
+  fs <*> as = fmap extract $ encode $ do
+    Entry i f <- decode (entries fs)
+    Entry j a <- decode (entries as) 
+    return $ Entry (i,j) (f a)
   as *> bs = fmap extract $ encode $ Prelude.concat $ replicate (reduceWith getCount as)  $  decode (entries bs)
   as <* bs = fmap extract $ encode $ Prelude.concat $ replicate (reduceWith getCount bs) <$> decode (entries as)
 
 instance Monad LZ78 where
   return a = Cons (Token 0 a) Nil
   (>>) = (*>)
-  as >>= k = extract <$> encode 
-    [ Entry (i,j) b 
-    | Entry i a <- decode (entries as)
-    , Entry j b <- decode (entries (k a))
-    ]
+  as >>= k = fmap extract $ encode $ do
+    Entry i a <- decode (entries as)
+    Entry j b <- decode (entries (k a))
+    return $ Entry (i,j) b 
 
 instance Adjustable LZ78 where
   adjust f i = fmap extract . encode . adjust (Entry (-1) . f . extract) i . decode . entries
