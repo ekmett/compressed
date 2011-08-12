@@ -44,10 +44,12 @@ import qualified Data.Map as Map
 import qualified Data.HashMap.Lazy as HashMap
 import qualified Data.List as List
 import Data.Generator
-import Data.Foldable
 import Data.Function (on)
 import Data.Functor
 import Data.Key as Key
+import Data.Foldable
+import Data.Traversable
+import Data.Semigroup
 import Data.Pointed
 import Text.Read
 import Control.Comonad
