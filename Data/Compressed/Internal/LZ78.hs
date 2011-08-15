@@ -54,7 +54,6 @@ import Data.Pointed
 import Text.Read
 import Control.Comonad
 import Data.Hashable
-import Data.Monoid (Monoid(..))
 import Data.Semigroup.Reducer (Reducer(..), Count(..))
 
 data Token a = Token {-# UNPACK #-} !Int a deriving (Eq, Ord)

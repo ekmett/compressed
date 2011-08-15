@@ -30,7 +30,6 @@ import Data.Foldable
 import Data.Semigroup
 import Data.Semigroup.Reducer
 import Data.Semigroup.Foldable
-import Data.Monoid
 import Data.Hashable
 import Data.Function (on)
 import Data.Functor.Bind
