@@ -45,7 +45,6 @@ import qualified Data.HashMap.Lazy as HashMap
 import qualified Data.List as List
 import Data.Generator
 import Data.Function (on)
-import Data.Functor
 import Data.Key as Key
 import Data.Foldable
 import Data.Traversable
