@@ -1,6 +1,6 @@
 name:          compressed
 category:      Data, Compression, MapReduce
-version:       0.2
+version:       0.3
 license:       BSD3
 cabal-version: >= 1.6
 license-file:  LICENSE
@@ -9,8 +9,8 @@ maintainer:    Edward A. Kmett <ekmett@gmail.com>
 stability:     experimental
 homepage:      http://github.com/ekmett/compressed/
 copyright:     Copyright (C) 2011 Edward A. Kmett
-synopsis:      Compressed generators and reducers
-description:   Compressed generators and reducers
+synopsis:      Compressed containers and reducers
+description:   Compressed containers and reducers
 build-type:    Simple
 
 source-repository head
@@ -19,22 +19,22 @@ source-repository head
 
 library
 
-  build-depends: 
+  build-depends:
     base                   >= 4        && < 5,
-    containers             >= 0.3      && < 0.5,
+    containers             >= 0.3      && < 0.6,
     fingertree             >= 0.0.1    && < 0.1,
     hashable               >= 1.1.2.1  && < 1.2,
     unordered-containers   >= 0.2.1    && < 0.3,
-    semigroups             >= 0.8.2    && < 0.9,
-    semigroupoids          >= 1.3      && < 1.4,
+    semigroups             >= 0.8.3.1  && < 0.9,
+    semigroupoids          >= 1.3.1.2  && < 1.4,
     comonad                >= 1.1.1.3  && < 1.2,
     pointed                >= 2.1      && < 2.2,
-    keys                   >= 2.1      && < 2.2,
-    reducers               >= 0.2      && < 0.3
+    keys                   >= 2.1.3.1  && < 2.2,
+    reducers               >= 0.3      && < 0.4
 
   exposed-modules:
     Data.Compressed.LZ78
     Data.Compressed.RunLengthEncoding
     Data.Compressed.Internal.LZ78
 
-  ghc-options: -Wall 
+  ghc-options: -Wall
