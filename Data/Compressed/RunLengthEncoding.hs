@@ -1,9 +1,13 @@
-{-# LANGUAGE TypeFamilies, MultiParamTypeClasses, TypeOperators, FlexibleInstances, FlexibleContexts, BangPatterns #-}
-
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE BangPatterns #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Compressed.RunLengthEncoding
--- Copyright   :  (c) Edward Kmett 2009
+-- Copyright   :  (c) Edward Kmett 2009-2012
 -- License     :  BSD-style
 -- Maintainer  :  ekmett@gmail.com
 -- Stability   :  experimental
@@ -14,7 +18,6 @@
 -- extract the structural redundancy that is present. Run length encoding
 -- can do so for long runs of identical inputs.
 -----------------------------------------------------------------------------
-
 module Data.Compressed.RunLengthEncoding
     ( RLE(..)
     , Run
@@ -33,6 +36,7 @@ import Data.Semigroup.Foldable
 import Data.Hashable
 import Data.Function (on)
 import Data.Functor.Bind
+import Data.Functor.Extend
 import Control.Comonad
 import Data.FingerTree (FingerTree,(|>),(<|),ViewL(..),ViewR(..),(><),viewl,viewr, Measured(..), split)
 import qualified Data.FingerTree as F
@@ -55,10 +59,11 @@ instance Ord a => Ord (Run a) where
     EQ -> compare n m
 
 instance Extend Run where
-  duplicate r@(Run i _) = Run i r
-  extend f r@(Run i _) = Run i (f r)
+  extended = extend
 
 instance Comonad Run where
+  duplicate r@(Run i _) = Run i r
+  extend f r@(Run i _) = Run i (f r)
   extract (Run _ a) = a 
 
 instance Functor Run where

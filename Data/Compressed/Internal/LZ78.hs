@@ -1,25 +1,27 @@
-{-# LANGUAGE TypeFamilies, BangPatterns, ParallelListComp #-} 
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE ParallelListComp #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Generator.LZ78
--- Copyright   :  (c) Edward Kmett 2009-2011
+-- Copyright   :  (c) Edward Kmett 2009-2012
 -- License     :  BSD-style
 -- Maintainer  :  ekmett@gmail.com
 -- Stability   :  experimental
 -- Portability :  non-portable (type families)
 --
 -- Compression algorithms are all about exploiting redundancy. When applying
--- an expensive 'Reducer' to a redundant source, it may be better to 
+-- an expensive 'Reducer' to a redundant source, it may be better to
 -- extract the structural redundancy that is present. 'LZ78' is a compression
 -- algorithm that does so, without requiring the dictionary to be populated
--- with all of the possible values of a data type unlike its later 
+-- with all of the possible values of a data type unlike its later
 -- refinement LZW, and which has fewer comparison reqirements during encoding
--- than its earlier counterpart LZ77. 
+-- than its earlier counterpart LZ77.
 -----------------------------------------------------------------------------
 
-module Data.Compressed.Internal.LZ78 
-    ( 
-    -- * Lempel-Ziv 78 
+module Data.Compressed.Internal.LZ78
+    (
+    -- * Lempel-Ziv 78
       Token(..)
     , LZ78(..)
     -- * Encoding
@@ -43,6 +45,7 @@ import Data.Sequence ((|>))
 import qualified Data.Map as Map
 import qualified Data.HashMap.Lazy as HashMap
 import qualified Data.List as List
+import Data.Functor.Extend
 import Data.Generator
 import Data.Function (on)
 import Data.Key as Key
@@ -67,22 +70,23 @@ instance Traversable Token where
   traverse f (Token i a) = Token i <$> f a
 
 instance Extend Token where
-  extend f t@(Token i _) = Token i (f t)
-  duplicate t@(Token i _) = Token i t
+  extended = extend
 
 instance Comonad Token where
+  extend f t@(Token i _) = Token i (f t)
+  duplicate t@(Token i _) = Token i t
   extract (Token _ a) = a
 
 instance Hashable a => Hashable (Token a) where
   hash (Token i a) = hashWithSalt i a
 
 -- | An LZ78 compressed 'Generator'.
-data LZ78 a 
-  = Cons {-# UNPACK #-} !(Token a) (LZ78 a) 
+data LZ78 a
+  = Cons {-# UNPACK #-} !(Token a) (LZ78 a)
   | Nil
 
 instance Show a => Show (LZ78 a) where
-  showsPrec d xs = showParen (d > 10) $ 
+  showsPrec d xs = showParen (d > 10) $
     showString "encode " . showsPrec 11 (toList xs)
 
 instance Eq a => Eq (LZ78 a) where
@@ -100,11 +104,11 @@ instance Generator (LZ78 a) where
   type Elem (LZ78 a) = a
   mapTo = go (Seq.singleton mempty) where
     go _ _ m Nil = m
-    go s f m (Cons (Token w c) ws) = m `mappend` go (s |> v) f v ws where 
+    go s f m (Cons (Token w c) ws) = m `mappend` go (s |> v) f v ws where
       v = Seq.index s w `mappend`  unit (f c)
 
 instance Functor LZ78 where
-  fmap f (Cons (Token i a) as) = Cons (Token i (f a)) (fmap f as) 
+  fmap f (Cons (Token i a) as) = Cons (Token i (f a)) (fmap f as)
   fmap _ Nil = Nil
   a <$ xs = go 0 (getCount (reduce xs)) where
      go !_ 0 = Nil
@@ -136,7 +140,7 @@ encodeOrd = go Map.empty 1 0 where
     Just p' -> go d f p' cs
     Nothing -> Cons t (go (Map.insert t f d) (succ f) 0 cs)
 
--- | /O(n^2)/ Contruct an LZ78-compressed 'Generator' using a list internally, requires an instance of Eq, 
+-- | /O(n^2)/ Contruct an LZ78-compressed 'Generator' using a list internally, requires an instance of Eq,
 -- less efficient than encode.
 encodeEq :: Eq a => [a] -> LZ78 a
 encodeEq = go [] 1 0 where
@@ -151,16 +155,16 @@ decode :: LZ78 a -> [a]
 decode = reduce
 
 -- | /O(n)/. Recompress with 'Hashable'
-recode :: (Eq a, Hashable a) => LZ78 a -> LZ78 a 
-recode = encode . decode 
+recode :: (Eq a, Hashable a) => LZ78 a -> LZ78 a
+recode = encode . decode
 
 -- | /O(n log n)/. Recompress with 'Ord'
 recodeOrd :: Ord a => LZ78 a -> LZ78 a
 recodeOrd = encodeOrd . decode
 
 -- | /O(n^2)/. Recompress with 'Eq'
-recodeEq :: Eq a => LZ78 a -> LZ78 a 
-recodeEq = encodeEq . decode 
+recodeEq :: Eq a => LZ78 a -> LZ78 a
+recodeEq = encodeEq . decode
 
 data Entry i a = Entry !i a deriving (Show,Read)
 
@@ -168,10 +172,11 @@ instance Functor (Entry i) where
   fmap f (Entry i a) = Entry i (f a)
 
 instance Extend (Entry i) where
-  extend f e@(Entry i _) = Entry i (f e)
-  duplicate e@(Entry i _) = Entry i e
+  extended = extend
 
 instance Comonad (Entry i) where
+  extend f e@(Entry i _) = Entry i (f e)
+  duplicate e@(Entry i _) = Entry i e
   extract (Entry _ a) = a
 
 instance Eq i => Eq (Entry i a) where
@@ -194,7 +199,7 @@ instance Applicative LZ78 where
   pure a = Cons (Token 0 a) Nil
   fs <*> as = fmap extract $ encode $ do
     Entry i f <- decode (entries fs)
-    Entry j a <- decode (entries as) 
+    Entry j a <- decode (entries as)
     return $ Entry (i,j) (f a)
   as *> bs = fmap extract $ encode $ Prelude.concat $ replicate (reduceWith getCount as)  $  decode (entries bs)
   as <* bs = fmap extract $ encode $ Prelude.concat $ replicate (reduceWith getCount bs) <$> decode (entries as)
@@ -205,7 +210,7 @@ instance Monad LZ78 where
   as >>= k = fmap extract $ encode $ do
     Entry i a <- decode (entries as)
     Entry j b <- decode (entries (k a))
-    return $ Entry (i,j) b 
+    return $ Entry (i,j) b
 
 instance Adjustable LZ78 where
   adjust f i = fmap extract . encode . adjust (Entry (-1) . f . extract) i . decode . entries
@@ -214,18 +219,18 @@ type instance Key LZ78 = Int
 
 instance Lookup LZ78 where
   lookup i xs = Key.lookup i (decode xs)
-  
+
 instance Indexable LZ78 where
   index xs i = index (decode xs) i
 
-instance FoldableWithKey LZ78 where 
+instance FoldableWithKey LZ78 where
   foldMapWithKey f xs = foldMapWithKey f (decode xs)
 
 instance Zip LZ78 where
-  zipWith f as bs = extract <$> encode 
+  zipWith f as bs = extract <$> encode
     [ Entry (i,j) (f a b)
     | Entry i a <- decode (entries as)
     | Entry j b <- decode (entries bs)
-    ] 
+    ]
 
 
