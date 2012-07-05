@@ -64,7 +64,7 @@ instance Extend Run where
 instance Comonad Run where
   duplicate r@(Run i _) = Run i r
   extend f r@(Run i _) = Run i (f r)
-  extract (Run _ a) = a 
+  extract (Run _ a) = a
 
 instance Functor Run where
   fmap f (Run n a) = Run n (f a)
@@ -77,6 +77,11 @@ instance Apply Run where
   Run n f <.> Run m a = Run (n * m) (f a)
   Run n _  .> Run m a = Run (n * m) a
   Run n a <.  Run m _ = Run (n * m) a
+
+instance ComonadApply Run where
+  Run n f <@> Run m a = Run (n * m) (f a)
+  Run n _  @> Run m a = Run (n * m) a
+  Run n a <@  Run m _ = Run (n * m) a
 
 instance Applicative Run where
   pure = Run 1
@@ -145,7 +150,7 @@ instance Pointed RLE where
   point = RLE . F.singleton . pure
 
 instance Apply RLE where
-  (<.>) = (<*>) 
+  (<.>) = (<*>)
   (<. ) = (<* )
   ( .>) = ( *>)
 
