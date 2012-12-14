@@ -78,7 +78,7 @@ instance Comonad Token where
   extract (Token _ a) = a
 
 instance Hashable a => Hashable (Token a) where
-  hash (Token i a) = hashWithSalt i a
+  hashWithSalt s (Token i a) = s `hashWithSalt` i `hashWithSalt` a
 
 -- | An LZ78 compressed 'Generator'.
 data LZ78 a
@@ -186,7 +186,6 @@ instance Ord i => Ord (Entry i a) where
   compare (Entry i _) (Entry j _) = compare i j
 
 instance Hashable i => Hashable (Entry i a) where
-  hash (Entry i _) = hash i
   hashWithSalt n (Entry i _) = hashWithSalt n i
 
 -- | exposes internal structure

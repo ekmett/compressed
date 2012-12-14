@@ -197,7 +197,6 @@ instance Generator (RLE a) where
   mapReduce f = foldMap (unit . f)
 
 instance Hashable a => Hashable (RLE a) where
-  hash = hash . toList
   hashWithSalt n = hashWithSalt n . toList
 
 instance Eq a => Eq (RLE a) where
