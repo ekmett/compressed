@@ -1,2 +1,13 @@
-.git
 dist
+docs
+wiki
+TAGS
+tags
+wip
+.DS_Store
+.*.swp
+.*.swo
+*.o
+*.hi
+*~
+*#
