@@ -8,17 +8,17 @@
 -- Portability :  non-portable (type families)
 --
 -- Compression algorithms are all about exploiting redundancy. When applying
--- an expensive 'Reducer' to a redundant source, it may be better to 
+-- an expensive 'Reducer' to a redundant source, it may be better to
 -- extract the structural redundancy that is present. 'LZ78' is a compression
 -- algorithm that does so, without requiring the dictionary to be populated
--- with all of the possible values of a data type unlike its later 
+-- with all of the possible values of a data type unlike its later
 -- refinement LZW, and which has fewer comparison reqirements during encoding
--- than its earlier counterpart LZ77. 
+-- than its earlier counterpart LZ77.
 -----------------------------------------------------------------------------
 
-module Data.Compressed.LZ78 
-    ( 
-    -- * Lempel-Ziv 78 
+module Data.Compressed.LZ78
+    (
+    -- * Lempel-Ziv 78
       LZ78
     -- * Encoding
     , encode    -- /O(n)/

@@ -4,6 +4,10 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP #-}
+#if defined(__GLASGOW_HASKELL__) && __GLASGOW_HASKELL__ >= 702
+{-# LANGUAGE Trustworthy #-}
+#endif
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Data.Compressed.RunLengthEncoding
@@ -14,7 +18,7 @@
 -- Portability :  portable
 --
 -- Compression algorithms are all about exploiting redundancy. When applying
--- an expensive 'Reducer' to a redundant source, it may be better to 
+-- an expensive 'Reducer' to a redundant source, it may be better to
 -- extract the structural redundancy that is present. Run length encoding
 -- can do so for long runs of identical inputs.
 -----------------------------------------------------------------------------
@@ -92,7 +96,7 @@ instance Applicative Run where
 instance Bind Run where
   Run n a >>- f = case f a of
     Run m b -> Run (n * m) b
- 
+
 instance Monad Run where
   return = Run 1
   Run n _ >> Run m b = Run (n * m) b
@@ -127,13 +131,13 @@ instance Measured Count (Run a) where
   measure (Run n _) = Count n
 
 -- | A 'Generator' which supports efficient 'mapReduce' operations over run-length encoded data.
-newtype RLE a = RLE { getRLE :: FingerTree Count (Run a) } 
+newtype RLE a = RLE { getRLE :: FingerTree Count (Run a) }
 
 toRuns :: RLE a -> [Run a]
 toRuns = toList . getRLE
 
 fromRuns :: [Run a] -> RLE a
-fromRuns = RLE . F.fromList 
+fromRuns = RLE . F.fromList
 
 instance Eq a => Semigroup (RLE a) where
   RLE l <> RLE r = go (viewr l) (viewl r) where
@@ -168,20 +172,20 @@ instance Bind RLE where
   (>>-) = (>>=)
 
 instance Monad RLE where
-  return = RLE . F.singleton . pure 
+  return = RLE . F.singleton . pure
   (>>) = (*>)
   RLE xs >>= f = RLE $ mconcat [ mconcat $ replicate n (getRLE (f a)) | Run n a <- toList xs ]
- 
+
 instance Eq a => Reducer a (RLE a) where
   unit = pure
   cons a (RLE r) = case viewl r of
     EmptyL -> pure a
-    Run n b :< r' 
+    Run n b :< r'
       | a == b    -> RLE (Run (n+1) a <| r')
       | otherwise -> RLE (Run 1     a <| r )
   snoc (RLE l) a = case viewr l of
     EmptyR -> pure a
-    l' :> Run n b 
+    l' :> Run n b
       | a == b    -> RLE (l' |> Run (n+1) b)
       | otherwise -> RLE (l  |> Run 1 a   )
 
@@ -205,11 +209,11 @@ instance Eq a => Eq (RLE a) where
 instance Zip RLE where
   zipWith f (RLE xs0) (RLE ys0) = RLE $ case toList xs0 of
     [] -> mempty
-    (Run n0 a0:as0) -> case toList ys0 of 
+    (Run n0 a0:as0) -> case toList ys0 of
       [] -> mempty
-      (Run m0 b0:bs0) -> go n0 a0 as0 m0 b0 bs0 
+      (Run m0 b0:bs0) -> go n0 a0 as0 m0 b0 bs0
     where
-      go !n !a !as !m !b !bs = case compare n m of 
+      go !n !a !as !m !b !bs = case compare n m of
         LT -> Run n (f a b) <| case as of
           [] -> mempty
           (Run n' a':as') -> go n' a' as' (m - n) b bs
@@ -221,27 +225,27 @@ instance Zip RLE where
         GT -> Run m (f a b) <| case bs of
           [] -> mempty
           (Run m' b':bs') -> go (n - m) a as m' b' bs'
-          
+
 type instance Key RLE = Int
 
 instance Lookup RLE where
-  lookup i (RLE xs) 
+  lookup i (RLE xs)
     | i < 0 = Nothing
     | otherwise = case viewl $ snd $ split (\n -> getCount n > i) xs of
       Run _ a :< _ -> Just a
-      EmptyL       -> Nothing 
+      EmptyL       -> Nothing
 
 instance Adjustable RLE where
   adjust f i (RLE xs) = RLE $ case viewl r of
     EmptyL -> xs
-    Run n a :< r' -> 
-      let 
+    Run n a :< r' ->
+      let
         k = i - getCount (measure l)
         infixr 4 <?
         Run 0 _ <? ys = ys
         Run m b <? ys = Run m b <| ys
      in l >< (Run k a <? Run 1 (f a) <? Run (n - k - 1) a <? r')
-    where 
+    where
       (l,r) = split (\n -> getCount n > i) xs
 
 
@@ -254,7 +258,7 @@ decode :: RLE a -> [a]
 decode = reduce
 
 recode :: Eq a => RLE a -> RLE a
-recode (RLE xs0) = case toList xs0 of 
+recode (RLE xs0) = case toList xs0 of
   [] -> RLE mempty
   (Run n0 a0:as0) -> RLE $ go n0 a0 as0
   where
@@ -268,6 +272,6 @@ encodeList []       = RLE mempty
 encodeList (a0:as0) = RLE $ go 1 a0 as0
   where
     go n a [] = F.singleton (Run n a)
-    go n a (b:bs) 
+    go n a (b:bs)
       | a == b    = go (n + 1) a bs
       | otherwise = Run n a <| go 1 b bs
