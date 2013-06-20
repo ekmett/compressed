@@ -1,3 +1,7 @@
+3.0.3
+-----
+* Widened bound on `fingertree` dependency
+
 3.0.2
 -----
 * Claim to be Trustworthy
