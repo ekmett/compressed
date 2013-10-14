@@ -1,3 +1,7 @@
+3.10
+----
+* Updated dependencies
+
 3.0.3
 -----
 * Widened bound on `fingertree` dependency
