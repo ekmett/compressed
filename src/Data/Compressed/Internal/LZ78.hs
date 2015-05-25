@@ -44,6 +44,7 @@ module Data.Compressed.Internal.LZ78
     ) where
 
 import Control.Applicative
+import Control.Monad.Zip
 import qualified Data.Sequence as Seq
 import Data.Sequence ((|>))
 import qualified Data.Map as Map
@@ -214,6 +215,10 @@ instance Monad LZ78 where
     Entry i a <- decode (entries as)
     Entry j b <- decode (entries (k a))
     return $ Entry (i,j) b
+
+instance MonadZip LZ78 where
+  mzipWith = Key.zipWith
+  munzip as = (fmap fst as, fmap snd as)
 
 instance Adjustable LZ78 where
   adjust f i = fmap extract . encode . adjust (Entry (-1) . f . extract) i . decode . entries
