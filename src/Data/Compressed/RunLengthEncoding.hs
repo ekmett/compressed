@@ -48,6 +48,7 @@ import Data.Generator
 import Data.Pointed
 import Data.Key
 import Control.Applicative
+import Control.Monad.Zip
 
 -- | A single run with a strict length
 data Run a = Run {-# UNPACK #-} !Int a deriving (Eq,Show)
@@ -175,6 +176,16 @@ instance Monad RLE where
   return = RLE . F.singleton . pure
   (>>) = (*>)
   RLE xs >>= f = RLE $ mconcat [ mconcat $ replicate n (getRLE (f a)) | Run n a <- toList xs ]
+
+instance MonadZip RLE where
+  munzip as = (fmap fst as, fmap snd as)
+  mzipWith f (RLE as0) (RLE bs0) = RLE $ F.fromList $ go (toList as0) (toList bs0) where
+    go [] _ = []
+    go _ [] = []
+    go (Run n a : as) (Run m b : bs) = case compare n m of
+      LT -> Run n (f a b) : go as (Run (m-n) b:bs)
+      EQ -> Run n (f a b) : go as bs
+      GT -> Run m (f a b) : go (Run (n-m) a:as) bs
 
 instance Eq a => Reducer a (RLE a) where
   unit = pure
