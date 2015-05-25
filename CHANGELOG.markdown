@@ -1,3 +1,8 @@
+3.10.1
+------
+* `instance MonadZip LZ78`
+* `instance MonadZip RLE`
+
 3.10
 ----
 * Updated dependencies
