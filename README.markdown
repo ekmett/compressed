@@ -1,7 +1,7 @@
 compressed
 ==========
 
-[![Build Status](https://secure.travis-ci.org/ekmett/compressed.png?branch=master)](http://travis-ci.org/ekmett/compressed)
+[![Hackage](https://img.shields.io/hackage/v/compressed.svg)](https://hackage.haskell.org/package/compressed) [![Build Status](https://secure.travis-ci.org/ekmett/compressed.png?branch=master)](http://travis-ci.org/ekmett/compressed
 
 This package provides compressed data structures for LZ78 and run length encoding. Their primary benefit is that if you go
 to decompress them you can decompress them in an arbitrary `Monoid`.
