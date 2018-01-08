@@ -11,7 +11,7 @@ homepage:      http://github.com/ekmett/compressed/
 bug-reports:   http://github.com/ekmett/compressed/issues
 copyright:     Copyright (C) 2011 Edward A. Kmett
 synopsis:      Compressed containers and reducers
-description:   Compressed containers and reducers
+description:   Compressed containers and reducers.
 build-type:    Simple
 extra-source-files:
   .ghci
