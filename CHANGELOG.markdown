@@ -1,3 +1,8 @@
+3.11
+----
+* Cleaned up warnings on modern GHC versions
+* Disabled some rules that weren't firing
+
 3.10.1
 ------
 * `instance MonadZip LZ78`
