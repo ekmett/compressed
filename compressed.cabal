@@ -1,6 +1,6 @@
 name:          compressed
 category:      Data, Compression, MapReduce
-version:       3.10.1
+version:       3.10.2
 license:       BSD3
 cabal-version: >= 1.6
 license-file:  LICENSE
@@ -35,8 +35,8 @@ library
     unordered-containers   >= 0.2.1    && < 0.3,
     semigroups             >= 0.8.3.1  && < 1,
     semigroupoids          >= 4        && < 6,
-    comonad                >= 4        && < 5,
-    pointed                >= 4        && < 5,
+    comonad                >= 4        && < 6,
+    pointed                >= 4        && < 6,
     keys                   >= 3.10     && < 4,
     reducers               >= 3.10     && < 4
 

@@ -43,7 +43,10 @@ module Data.Compressed.Internal.LZ78
     , entries
     ) where
 
+#if __GLASGOW_HASKELL__ < 710
 import Control.Applicative
+import Data.Traversable
+#endif
 import Control.Monad.Zip
 import qualified Data.Sequence as Seq
 import Data.Sequence ((|>))
@@ -55,7 +58,6 @@ import Data.Generator
 import Data.Function (on)
 import Data.Key as Key
 import Data.Foldable
-import Data.Traversable
 import Data.Semigroup
 import Data.Pointed
 import Text.Read

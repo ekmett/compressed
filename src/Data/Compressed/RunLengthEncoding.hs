@@ -28,6 +28,7 @@ module Data.Compressed.RunLengthEncoding
     , runLength
     , decode
     , encode
+    , encodeList
     , recode
     , toRuns
     , fromRuns
@@ -47,7 +48,9 @@ import qualified Data.FingerTree as F
 import Data.Generator
 import Data.Pointed
 import Data.Key
+#if __GLASGOW_HASKELL__ < 710
 import Control.Applicative
+#endif
 import Control.Monad.Zip
 
 -- | A single run with a strict length
@@ -262,8 +265,9 @@ instance Adjustable RLE where
 
 encode :: (Generator c, Eq (Elem c)) => c -> RLE (Elem c)
 encode = reduce
-{-# RULES "encode/recode"     encode = recode #-}
-{-# RULES "encode/encodeList" encode = encodeList #-}
+
+-- {-# RULES "encode/recode"     encode = recode #-}
+-- {-# RULES "encode/encodeList" encode = encodeList #-}
 
 decode :: RLE a -> [a]
 decode = reduce
