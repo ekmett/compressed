@@ -35,7 +35,9 @@ module Data.Compressed.RunLengthEncoding
     ) where
 
 import Data.Foldable
+#if __GLASGOW_HASKELL__ < 804
 import Data.Semigroup
+#endif
 import Data.Semigroup.Reducer
 import Data.Semigroup.Foldable
 import Data.Hashable
